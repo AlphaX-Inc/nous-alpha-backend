@@ -16,5 +16,10 @@
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1"
+  },
+  "_comment_optionalDeps": "Linux native binaries are listed as optionalDependencies in the parent SDK and platform-gated. Railway's mise-installed Node binary expects the musl variant (even though Railway runs Debian); but `npm ci` only installs optional deps that are in the lockfile, and our lockfile was generated on macOS so it lacks the Linux variants. Listing them explicitly here and regenerating the lockfile with `npm install --os=linux --libc=musl/glibc` adds both variants to the lockfile so `npm ci` on Railway picks up the right one.",
+  "optionalDependencies": {
+    "@anthropic-ai/claude-agent-sdk-linux-x64-musl": "0.2.138",
+    "@anthropic-ai/claude-agent-sdk-linux-x64": "0.2.138"
   }
 }

@@ -198,6 +198,9 @@ async function callOnePersona(persona, course, motion, lang, abortController) {
   const t0 = Date.now();
   console.log(`[live] persona ${persona.id} ${persona.name} → ${resolvedSource} starting`);
 
+  // Capture stderr from the spawned Claude Code binary so we can see why it
+  // exits non-zero on Railway (SDK silently /dev/nulls stderr by default).
+  const stderrChunks = [];
   const options = {
     abortController,
     permissionMode: "bypassPermissions",
@@ -207,11 +210,18 @@ async function callOnePersona(persona, course, motion, lang, abortController) {
     agents: {
       [inlineKey]: agentDef,
     },
+    stderr: (chunk) => { if (stderrChunks.length < 50) stderrChunks.push(String(chunk).slice(0, 800)); },
     ...(CLAUDE_BINARY_PATH ? { pathToClaudeCodeExecutable: CLAUDE_BINARY_PATH } : {}),
   };
 
   const q = query({ prompt, options });
-  const text = await collectAssistantText(q, `persona ${persona.id} ${persona.name}`);
+  let text;
+  try {
+    text = await collectAssistantText(q, `persona ${persona.id} ${persona.name}`);
+  } catch (err) {
+    const stderrJoined = stderrChunks.join("").slice(0, 1500);
+    throw new Error(`${String(err).slice(0, 200)} | stderr: ${stderrJoined}`);
+  }
   const dt = Date.now() - t0;
   console.log(`[live] persona ${persona.id} ${persona.name} → ${dt}ms, ${text.length} chars`);
   const parsed = safeJsonParse(text);
@@ -268,7 +278,7 @@ export async function runRoundtableLive({ course, motion, lang }) {
       voteReasons[idx] = v.reason;
       ok.push(v);
     } else {
-      bad.push({ idx, error: String(r.reason).slice(0, 200) });
+      bad.push({ idx, error: String(r.reason).slice(0, 2000) });
     }
   });
 

@@ -100,6 +100,7 @@ app.get("/api/roundtable", async (req, res) => {
       picks: live.picks,
       pickTally: live.pickTally,
       isComparison: live.isComparison,
+      failures: live.failures, // expose per-persona errors so deploy issues are debuggable from curl
     };
     cacheSet(key, payload);
     res.json(payload);

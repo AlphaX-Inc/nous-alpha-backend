@@ -71,6 +71,37 @@ app.get("/health", (_req, res) => {
     stubOnly: STUB_ONLY,
     cacheSize: cache.size,
     avatarMapping: PERSONA_MAPPING,
+    deployMarker: "v3-musl-nuked", // bump on each redeploy attempt to verify rollout
+  });
+});
+
+app.get("/diag", async (_req, res) => {
+  const fs = await import("node:fs/promises");
+  const path = await import("node:path");
+  const dir = path.resolve("node_modules", "@anthropic-ai");
+  let entries = [];
+  try {
+    entries = await fs.readdir(dir);
+  } catch (e) {
+    return res.json({ error: String(e) });
+  }
+  const detail = await Promise.all(entries.map(async (name) => {
+    const p = path.join(dir, name);
+    let claudeExists = false;
+    let stat = null;
+    try {
+      stat = await fs.stat(path.join(p, "claude"));
+      claudeExists = true;
+    } catch {}
+    return { name, claudeExists, claudeSize: stat?.size ?? null };
+  }));
+  res.json({
+    nodeVersion: process.version,
+    platform: process.platform,
+    arch: process.arch,
+    libc: process.report?.getReport?.()?.header?.glibcVersionRuntime ?? "n/a",
+    cwd: process.cwd(),
+    anthropicDirs: detail,
   });
 });
 

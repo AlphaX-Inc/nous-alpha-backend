@@ -75,6 +75,24 @@ app.get("/health", (_req, res) => {
   });
 });
 
+app.get("/diag-spawn", async (_req, res) => {
+  const { spawn } = await import("node:child_process");
+  const path = await import("node:path");
+  const bin = path.resolve("node_modules", "@anthropic-ai", "claude-agent-sdk-linux-x64", "claude");
+  const child = spawn(bin, ["--version"], {
+    env: { ...process.env },
+    stdio: ["ignore", "pipe", "pipe"],
+  });
+  let stdout = "", stderr = "";
+  child.stdout.on("data", (d) => { stdout += d.toString(); });
+  child.stderr.on("data", (d) => { stderr += d.toString(); });
+  const exitCode = await new Promise((r) => {
+    child.on("exit", (code) => r(code));
+    child.on("error", (e) => { stderr += "spawn error: " + String(e); r(-1); });
+  });
+  res.json({ bin, exitCode, stdout: stdout.slice(0, 4000), stderr: stderr.slice(0, 4000) });
+});
+
 app.get("/diag", async (_req, res) => {
   const fs = await import("node:fs/promises");
   const path = await import("node:path");

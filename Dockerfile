@@ -5,15 +5,16 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci --omit=dev
 
-# The SDK may look at the linux-x64-musl path even on glibc systems
-# (libc detection isn't always reliable). Mirror the glibc binary into
-# the musl directory so either lookup resolves to a working binary.
-RUN if [ -d node_modules/@anthropic-ai/claude-agent-sdk-linux-x64 ] \
-    && [ ! -d node_modules/@anthropic-ai/claude-agent-sdk-linux-x64-musl ]; then \
-      cp -r node_modules/@anthropic-ai/claude-agent-sdk-linux-x64 \
-            node_modules/@anthropic-ai/claude-agent-sdk-linux-x64-musl ; \
-    fi \
- && ls node_modules/@anthropic-ai/
+# The SDK's path-picker tries the linux-x64-musl directory FIRST on Linux
+# and returns whatever path it can resolve, then errors at spawn time if
+# the binary at that path isn't actually executable on this libc. On
+# Debian (glibc), wipe the musl directory so the picker falls through to
+# linux-x64 (which has a working glibc binary).
+RUN rm -rf node_modules/@anthropic-ai/claude-agent-sdk-linux-x64-musl \
+ && echo "--- node_modules/@anthropic-ai listing after cleanup ---" \
+ && ls -la node_modules/@anthropic-ai/ \
+ && echo "--- linux-x64 contents ---" \
+ && ls -la node_modules/@anthropic-ai/claude-agent-sdk-linux-x64/ 2>/dev/null || echo "linux-x64 dir missing!"
 
 COPY . .
 

@@ -71,26 +71,45 @@ app.get("/health", (_req, res) => {
     stubOnly: STUB_ONLY,
     cacheSize: cache.size,
     avatarMapping: PERSONA_MAPPING,
-    deployMarker: "v3-musl-nuked", // bump on each redeploy attempt to verify rollout
+    deployMarker: "v4-stderr-capture", // bump on each redeploy attempt to verify rollout
   });
 });
 
-app.get("/diag-spawn", async (_req, res) => {
+app.get("/diag-spawn", async (req, res) => {
   const { spawn } = await import("node:child_process");
   const path = await import("node:path");
   const bin = path.resolve("node_modules", "@anthropic-ai", "claude-agent-sdk-linux-x64", "claude");
-  const child = spawn(bin, ["--version"], {
-    env: { ...process.env },
-    stdio: ["ignore", "pipe", "pipe"],
+  const mode = req.query.mode || "version";
+  let args;
+  if (mode === "version") args = ["--version"];
+  else if (mode === "help") args = ["--help"];
+  else if (mode === "sdk") args = ["--output-format", "stream-json", "--verbose", "--input-format", "stream-json"];
+  else if (mode === "print") args = ["-p", "say hello in one word"];
+  else args = ["--version"];
+
+  const child = spawn(bin, args, {
+    env: { ...process.env, CLAUDE_CODE_ENTRYPOINT: "sdk-ts" },
+    stdio: ["pipe", "pipe", "pipe"],
   });
   let stdout = "", stderr = "";
   child.stdout.on("data", (d) => { stdout += d.toString(); });
   child.stderr.on("data", (d) => { stderr += d.toString(); });
-  const exitCode = await new Promise((r) => {
-    child.on("exit", (code) => r(code));
-    child.on("error", (e) => { stderr += "spawn error: " + String(e); r(-1); });
+
+  // For sdk mode, send a minimal initialize message and close stdin
+  if (mode === "sdk") {
+    child.stdin.write(JSON.stringify({ type: "user", message: { role: "user", content: "hi" } }) + "\n");
+    setTimeout(() => { try { child.stdin.end(); } catch {} }, 1000);
+  } else {
+    child.stdin.end();
+  }
+
+  const result = await new Promise((r) => {
+    let exitCode = null, signal = null;
+    child.on("exit", (code, sig) => { exitCode = code; signal = sig; r({ exitCode, signal }); });
+    child.on("error", (e) => { stderr += "spawn error: " + String(e); r({ exitCode: -1, signal: null }); });
+    setTimeout(() => { try { child.kill(); } catch {}; r({ exitCode: -2, signal: "TIMEOUT" }); }, 8000);
   });
-  res.json({ bin, exitCode, stdout: stdout.slice(0, 4000), stderr: stderr.slice(0, 4000) });
+  res.json({ bin, args, ...result, stdout: stdout.slice(0, 4000), stderr: stderr.slice(0, 4000) });
 });
 
 app.get("/diag", async (_req, res) => {

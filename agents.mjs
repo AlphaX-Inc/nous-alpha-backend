@@ -15,6 +15,27 @@ import { PERSONAS } from "./personas.mjs";
 
 const _AGENTS_DIR = path.join(path.dirname(fileURLToPath(import.meta.url)), "agents");
 
+// SDK's native-binary path-picker tries claude-agent-sdk-linux-x64-musl first
+// and returns the first path it can resolve — even on glibc systems where the
+// musl binary won't actually spawn. If both directories exist (which happens
+// on Railway's nixpacks build because both Linux variants are pinned in
+// optionalDependencies), the picker resolves to musl, fails at spawn, and the
+// SDK throws "Claude Code native binary not found". Force the glibc binary
+// path explicitly via options.pathToClaudeCodeExecutable to bypass the picker.
+function resolveClaudePath() {
+  if (process.platform !== "linux" || process.arch !== "x64") return undefined;
+  try {
+    const cwd = path.resolve(".");
+    const glibc = path.join(cwd, "node_modules", "@anthropic-ai", "claude-agent-sdk-linux-x64", "claude");
+    if (fs.existsSync(glibc)) return glibc;
+  } catch {}
+  return undefined;
+}
+const CLAUDE_BINARY_PATH = resolveClaudePath();
+if (CLAUDE_BINARY_PATH) {
+  console.log(`[live] forcing pathToClaudeCodeExecutable=${CLAUDE_BINARY_PATH}`);
+}
+
 const STANCE_VALUES = ["bull", "bear", "abs"];
 
 // Read the user's ~/.claude/agents/<name>.md file once, parse frontmatter
@@ -186,6 +207,7 @@ async function callOnePersona(persona, course, motion, lang, abortController) {
     agents: {
       [inlineKey]: agentDef,
     },
+    ...(CLAUDE_BINARY_PATH ? { pathToClaudeCodeExecutable: CLAUDE_BINARY_PATH } : {}),
   };
 
   const q = query({ prompt, options });

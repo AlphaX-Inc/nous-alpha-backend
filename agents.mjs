@@ -203,7 +203,10 @@ async function callOnePersona(persona, course, motion, lang, abortController) {
   const stderrChunks = [];
   const options = {
     abortController,
-    permissionMode: "bypassPermissions",
+    // No permissionMode override — "bypassPermissions" passes
+    // --dangerously-skip-permissions, which the binary refuses under root
+    // (Railway containers run as root by default). With tools:[] there are
+    // no tool-permission prompts to bypass anyway.
     maxTurns: 1, // single turn, no tool loop, no skill auto-load
     settingSources: [],
     agent: inlineKey,

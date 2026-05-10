@@ -71,7 +71,7 @@ app.get("/health", (_req, res) => {
     stubOnly: STUB_ONLY,
     cacheSize: cache.size,
     avatarMapping: PERSONA_MAPPING,
-    deployMarker: "v4-stderr-capture", // bump on each redeploy attempt to verify rollout
+    deployMarker: "v5-no-bypass-perms", // bump on each redeploy attempt to verify rollout
   });
 });
 

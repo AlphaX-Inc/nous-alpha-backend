@@ -9,9 +9,7 @@
   },
   "scripts": {
     "start": "node server.mjs",
-    "dev": "node --watch server.mjs",
-    "_postinstall_note": "Railway's mise-installed Node is musl-built but Railway's container is Debian (glibc), so npm ci skips the musl native SDK binary even though Node needs it at runtime. Force-install both Linux variants here so the right one is always present at runtime.",
-    "postinstall": "node -e \"if(process.platform==='linux'){require('child_process').execSync('npm install --no-save --force @anthropic-ai/claude-agent-sdk-linux-x64-musl@0.2.138 @anthropic-ai/claude-agent-sdk-linux-x64@0.2.138 --os=linux --libc=musl --cpu=x64',{stdio:'inherit'})}\""
+    "dev": "node --watch server.mjs"
   },
   "dependencies": {
     "@anthropic-ai/claude-agent-sdk": "^0.2.138",

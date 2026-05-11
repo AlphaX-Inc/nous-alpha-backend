@@ -31,6 +31,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 const DEFAULT_MOTION_JA = "PP-INC を +2% に増やすべきか";
 const DEFAULT_MOTION_EN = "Should PP-INC be increased by +2%?";
+const DEFAULT_MOTION_KO = "PP-INC 비중을 +2% 늘려야 하는가?";
 
 const app = express();
 // Allow specific origin in production (e.g. https://paypay-nous-alpha.vercel.app);
@@ -143,9 +144,13 @@ app.get("/diag", async (_req, res) => {
 });
 
 app.get("/api/roundtable", async (req, res) => {
-  const lang = req.query.lang === "en" ? "en" : "ja";
+  const lang = (req.query.lang === "en" || req.query.lang === "ko") ? req.query.lang : "ja";
   const course = String(req.query.course || "PP-INC");
-  const motion = String(req.query.motion || (lang === "en" ? DEFAULT_MOTION_EN : DEFAULT_MOTION_JA));
+  const motion = String(req.query.motion || (
+    lang === "en" ? DEFAULT_MOTION_EN :
+    lang === "ko" ? DEFAULT_MOTION_KO :
+    DEFAULT_MOTION_JA
+  ));
 
   if (!LIVE_MODE) {
     if (req.query.motion && STUB_MOTION_DELAY_MS > 0) await sleep(STUB_MOTION_DELAY_MS);
@@ -179,9 +184,13 @@ app.get("/api/roundtable", async (req, res) => {
 });
 
 app.get("/api/committee", async (req, res) => {
-  const lang = req.query.lang === "en" ? "en" : "ja";
+  const lang = (req.query.lang === "en" || req.query.lang === "ko") ? req.query.lang : "ja";
   const course = String(req.query.course || "PP-INC");
-  const motion = String(req.query.motion || (lang === "en" ? DEFAULT_MOTION_EN : DEFAULT_MOTION_JA));
+  const motion = String(req.query.motion || (
+    lang === "en" ? DEFAULT_MOTION_EN :
+    lang === "ko" ? DEFAULT_MOTION_KO :
+    DEFAULT_MOTION_JA
+  ));
 
   if (!LIVE_MODE) {
     if (req.query.motion && STUB_MOTION_DELAY_MS > 0) await sleep(STUB_MOTION_DELAY_MS);

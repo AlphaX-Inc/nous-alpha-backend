@@ -127,6 +127,31 @@ Schema:
 }
 `;
 
+const PROMPT_TEMPLATE_KO = (persona, course, motion) => `
+당신은 PayPay × Nous Alpha 전문가 위원회의 일원으로서 "${persona.name}"(${persona.role_ko || persona.role_ja || persona.role})의 입장에서 발언해야 합니다.
+이 인물 고유의 어휘, 관심사, 분석 기법을 반드시 사용하고 다른 전문가의 표현이나 클리셰를 그대로 따라 하는 것은 금지입니다.
+11명 각자가 서로 다른 각도, 다른 결론, 다른 표현으로 답해야 합니다. 같은 의제에 대해 같은 답이 나오면 실패입니다.
+
+코스: ${course}
+의제: ${motion}
+
+먼저 의제 유형을 판별하십시오:
+  • "X를 ~% 늘려야 하는가" / "X는 매수인가" 같은 **양자택일 제안** → stance에 bull/bear/abs를 반환하고 pick은 null로 합니다.
+  • "A vs B" / "A와 B 중 어느 것이 더 나은가" 같은 **비교/다지선다** → pick에 의제에 등장한 선택지 이름을 그대로(원문 그대로) 넣습니다. stance는 bull(강하게 추천), abs(어느 쪽이든 무방), bear(둘 다 반대)로 사용합니다.
+
+JSON만으로 답변하십시오. 평문, 마크다운, 서두는 금지합니다.
+스키마:
+{
+  "stance": "bull" | "bear" | "abs",
+  "pick": null | "선호하는 선택지 이름(의제 원문 그대로)",
+  "confidence": 0.0..1.0,
+  "topic": "짧은 카테고리 (한국어 12자 이내, 본인 분야 기준)",
+  "line": "${persona.name}의 어조로 1~2문장 (60~100자). 비교라면 결론의 선택지를 명시할 것.",
+  "reason": "투표 사유를 15자 이내로",
+  "evidence": ["짧은 근거 1", "짧은 근거 2"]
+}
+`;
+
 function safeJsonParse(s) {
   if (!s) return null;
   // strip code fences if present
@@ -162,9 +187,10 @@ async function collectAssistantText(q, debugTag) {
 }
 
 async function callOnePersona(persona, course, motion, lang, abortController) {
-  const prompt = lang === "en"
-    ? PROMPT_TEMPLATE_EN(persona, course, motion)
-    : PROMPT_TEMPLATE_JA(persona, course, motion);
+  const prompt =
+    lang === "en" ? PROMPT_TEMPLATE_EN(persona, course, motion) :
+    lang === "ko" ? PROMPT_TEMPLATE_KO(persona, course, motion) :
+                    PROMPT_TEMPLATE_JA(persona, course, motion);
 
   // Load the user's named subagent file inline so we can lock down its tool
   // list. With settingSources:["user"] the agent could auto-invoke the Skill

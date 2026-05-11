@@ -16,6 +16,7 @@ export const PERSONAS = [
     name: "Leo Aschenbrenner",
     role: "AI · Compute Scaling",
     role_ja: "AI・計算インフラ",
+    role_ko: "AI · 컴퓨팅 인프라",
     agentName: "aschenbrenner-tech-hedge-fund",
     inline: {
       description: "Secular AI / compute-scaling thesis investor in the Situational Awareness tradition.",
@@ -28,6 +29,7 @@ export const PERSONAS = [
     name: "Jim Simons",
     role: "Quant Factor",
     role_ja: "クオンツ・ファクター",
+    role_ko: "퀀트 팩터",
     agentName: "quantitative-finance-expert",
     inline: {
       description: "Statistical / signal-driven quant in the RenTech tradition.",
@@ -40,6 +42,7 @@ export const PERSONAS = [
     name: "Ken Griffin",
     role: "Multi-strategy · Citadel",
     role_ja: "マルチ戦略",
+    role_ko: "멀티 스트래티지",
     agentName: "discretionary-hedge-fund-agent",
     inline: {
       description: "Multi-strategy hedge fund operator at Citadel.",
@@ -52,6 +55,7 @@ export const PERSONAS = [
     name: "Ray Dalio",
     role: "Macro · All-Weather",
     role_ja: "マクロ・全天候",
+    role_ko: "매크로 · 올웨더",
     agentName: "dalio-macro-debt-cycle",
     inline: {
       description: "Big Debt Cycle / all-weather macro investor.",
@@ -64,6 +68,7 @@ export const PERSONAS = [
     name: "S. Druckenmiller",
     role: "Technical",
     role_ja: "テクニカル",
+    role_ko: "테크니컬",
     agentName: "industry-timing-rotation-model",
     inline: {
       description: "Technical / momentum / regime-aware macro trader.",
@@ -76,6 +81,7 @@ export const PERSONAS = [
     name: "Howard Marks",
     role: "Credit",
     role_ja: "クレジット",
+    role_ko: "크레딧",
     agentName: "soros-macro-history-debt",
     inline: {
       description: "Credit / second-level thinker in the Marks tradition.",
@@ -88,6 +94,7 @@ export const PERSONAS = [
     name: "Michael Burry",
     role: "Contrarian",
     role_ja: "コントラリアン",
+    role_ko: "컨트래리언",
     agentName: "burry-contrarian-investor",
     inline: {
       description: "Contrarian / structural-flaw / forensic accountant.",
@@ -100,6 +107,7 @@ export const PERSONAS = [
     name: "P. Tudor Jones",
     role: "Risk · Hedging",
     role_ja: "リスク・ヘッジ",
+    role_ko: "리스크 · 헷지",
     agentName: "ptj-macro-trading-playbook",
     inline: {
       description: "Risk-first global-macro trader.",
@@ -112,6 +120,7 @@ export const PERSONAS = [
     name: "Charlie Munger",
     role: "Inversion · Red-team",
     role_ja: "インバージョン",
+    role_ko: "인버전 · 레드팀",
     agentName: "munger-inversion",
     inline: {
       description: "Munger 'invert, always invert' red-teamer.",
@@ -124,6 +133,7 @@ export const PERSONAS = [
     name: "Jamie Dimon",
     role: "Banking · Credit",
     role_ja: "銀行・与信",
+    role_ko: "뱅킹 · 신용",
     agentName: "dimon-ceo-macro-analysis",
     inline: {
       description: "Bank CEO / systemic-credit / geopolitics-aware macro.",
@@ -136,6 +146,7 @@ export const PERSONAS = [
     name: "Seth Klarman",
     role: "Deep Value",
     role_ja: "ディープ・バリュー",
+    role_ko: "딥 밸류",
     agentName: "klarman-opportunistic-value",
     inline: {
       description: "Opportunistic deep-value with margin-of-safety primacy.",
